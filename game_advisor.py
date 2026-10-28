@@ -1,6 +1,6 @@
 """game_advisor.py - Game Theory Advisor, a console helper for everyday decisions.
 
-You describe a situation (English or Russian); the program recognises which
+You describe a situation in English (Latin letters only); the program recognises which
 classic game-theory model it resembles, builds a payoff matrix, finds the
 equilibrium and prints short, practical advice. Fully offline, standard
 library only.
@@ -15,6 +15,7 @@ import argparse
 import copy
 import sys
 import textwrap
+import unicodedata
 from typing import Dict, List, Optional, Tuple
 
 Matrix = List[List[Tuple[float, float]]]  # matrix[row][col] = (you, other)
@@ -30,8 +31,7 @@ GAMES: Dict[str, dict] = {
         "matrix": [[(3, 3), (0, 5)], [(5, 0), (1, 1)]],
         "coop": (0, 0),
         "keywords": ["dishes", "chores", "cleaning", "share costs", "both could slack",
-                     "group project effort", "who pays", "tidy up", "посуда", "посуду",
-                     "уборка", "уборку", "делить", "делим", "общие расходы", "лень"],
+                     "group project effort", "who pays", "tidy up"],
         "advice": [
             "Slacking looks better for each of you alone, and that is exactly how "
             "both of you end up worse off.",
@@ -48,8 +48,7 @@ GAMES: Dict[str, dict] = {
         "matrix": [[(3, 3), (2, 4)], [(4, 2), (0, 0)]],
         "coop": (0, 0),
         "keywords": ["argument", "quarrel", "who backs down", "stubborn", "refuse to apologize",
-                     "standoff", "conflict", "ссора", "ссорим", "спор", "не уступает",
-                     "упрям", "конфликт"],
+                     "standoff", "conflict"],
         "advice": [
             "If both of you stand firm, you both lose the most; the stubborn side "
             "only 'wins' when the other gives in.",
@@ -67,8 +66,7 @@ GAMES: Dict[str, dict] = {
         "matrix": [[(5, 5), (0, 3)], [(3, 0), (3, 3)]],
         "coop": (0, 0),
         "keywords": ["team", "together", "project", "rely", "depend", "trust",
-                     "plan jointly", "команда", "команде", "вместе", "проект",
-                     "довериться", "надеяться"],
+                     "plan jointly"],
         "advice": [
             "The best result needs both of you to commit; the safe option is "
             "guaranteed but smaller.",
@@ -85,8 +83,7 @@ GAMES: Dict[str, dict] = {
         "matrix": [[(3, 2), (0, 0)], [(0, 0), (2, 3)]],
         "coop": None,
         "keywords": ["where to go", "movie", "restaurant", "weekend", "vacation",
-                     "choose together", "куда пойти", "кино", "ресторан", "выходные",
-                     "отпуск"],
+                     "choose together"],
         "advice": [
             "You both want to do something together; the worst outcome is not "
             "agreeing at all.",
@@ -102,7 +99,7 @@ GAMES: Dict[str, dict] = {
         "matrix": None,
         "coop": None,
         "keywords": ["take it or leave it", "offer", "salary", "price", "bill", "negotiate",
-                     "split money", "предложение", "зарплата", "цена", "торг", "счёт", "счет"],
+                     "split money"],
         "advice": [],
         "phrase": "",
     },
@@ -125,6 +122,8 @@ def validate_description(text: str) -> Tuple[bool, str]:
         return False, "Please write at least 3 words so I can understand the situation."
     if not any(ch.isalpha() for ch in text):
         return False, "The description should contain words, not only symbols."
+    if any(ch.isalpha() and not unicodedata.name(ch, "").startswith("LATIN") for ch in text):
+        return False, "Please write the description in English using Latin letters only."
     return True, ""
 
 
@@ -235,13 +234,16 @@ def run_selftest() -> int:
     assert mixed_nash_2x2(pd) is None
     assert classify("we argue who will wash the dishes")[0] in GAMES
     assert classify("blah blah")[0] is None
-    assert classify("куда пойти на выходные, кино или ресторан")[0] == "battle"
+    assert classify("where to go this weekend, a movie or a restaurant")[0] == "battle"
     assert validate_description("")[0] is False
     assert validate_description("   ")[0] is False
     assert validate_description("hi")[0] is False
     assert validate_description("!!! ??? ...")[0] is False
     assert validate_description("x" * 1001)[0] is False
     assert validate_description("We argue about the dishes")[0] is True
+    assert validate_description("куда пойти на выходные")[0] is False
+    assert validate_description("cafe with friends today")[0] is True
+    assert validate_description("caf\u00e9 with friends today")[0] is True
     assert adjust_matrix("pd", True, 5)[0][0] == (5, 5)
     assert adjust_matrix("battle", True, 5) == GAMES["battle"]["matrix"]
     assert ultimatum_share(False, 1) == 40 and ultimatum_share(True, 1) == 50
@@ -253,12 +255,12 @@ def run_selftest() -> int:
 # Input helpers (the input function is a parameter so they can be tested)
 # --------------------------------------------------------------------------
 def ask_yes_no(question: str, ask=input) -> bool:
-    """Ask a y/n question (y/n/yes/no/да/нет) until the answer is valid."""
+    """Ask a y/n question (y/n/yes/no) until the answer is valid."""
     while True:
         ans = ask(question + " (y/n): ").strip().lower()
-        if ans in ("y", "yes", "да"):
+        if ans in ("y", "yes"):
             return True
-        if ans in ("n", "no", "нет"):
+        if ans in ("n", "no"):
             return False
         print("Please answer y or n.")
 
