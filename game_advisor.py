@@ -47,7 +47,7 @@ GAMES: Dict[str, dict] = {
         "actions": ["Yield", "Stand firm"],
         "matrix": [[(3, 3), (2, 4)], [(4, 2), (0, 0)]],
         "coop": (0, 0),
-        "keywords": ["argument", "quarrel", "who backs down", "stubborn", "refuse to apologize",
+        "keywords": ["argument", "argue", "arguing", "quarrel", "who backs down", "stubborn", "refuse to apologize",
                      "standoff", "conflict"],
         "advice": [
             "If both of you stand firm, you both lose the most; the stubborn side "
@@ -98,7 +98,7 @@ GAMES: Dict[str, dict] = {
         "actions": [],
         "matrix": None,
         "coop": None,
-        "keywords": ["take it or leave it", "offer", "salary", "price", "bill", "negotiate",
+        "keywords": ["take it or leave it", "offer", "salary", "price", "bill", "negotiat",
                      "split money"],
         "advice": [],
         "phrase": "",
@@ -234,6 +234,8 @@ def run_selftest() -> int:
     assert mixed_nash_2x2(pd) is None
     assert classify("we argue who will wash the dishes")[0] in GAMES
     assert classify("blah blah")[0] is None
+    assert classify("we are negotiating the price")[0] == "ultimatum"  # stem 'negotiat'
+    assert classify("we argue about everything")[0] == "chicken"
     assert classify("where to go this weekend, a movie or a restaurant")[0] == "battle"
     assert validate_description("")[0] is False
     assert validate_description("   ")[0] is False

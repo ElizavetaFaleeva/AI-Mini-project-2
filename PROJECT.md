@@ -21,10 +21,10 @@ game-advisor/game_advisor.py  (run with: python3 game-advisor/game_advisor.py)
 
 ## Game library (2x2, payoffs are (you, other); rows = your action, columns = other's action)
 1. Prisoner's Dilemma: actions Cooperate/Defect. CC=(3,3) CD=(0,5) DC=(5,0) DD=(1,1). Keywords: dishes, chores, cleaning, share costs, both could slack, group project effort, who pays, tidy up.
-2. Chicken: actions Yield/Stand firm. YY=(3,3) YS=(2,4) SY=(4,2) SS=(0,0). Keywords: argument, quarrel, who backs down, stubborn, refuse to apologize, standoff, conflict.
+2. Chicken: actions Yield/Stand firm. YY=(3,3) YS=(2,4) SY=(4,2) SS=(0,0). Keywords: argument, argue, arguing, quarrel, who backs down, stubborn, refuse to apologize, standoff, conflict.
 3. Stag Hunt: actions Trust/Play safe. TT=(5,5) TS=(0,3) ST=(3,0) SS=(3,3). Keywords: team, together, project, rely, depend, trust, plan jointly.
 4. Battle of the Sexes: actions Option A/Option B. AA=(3,2) AB=(0,0) BA=(0,0) BB=(2,3). Keywords: where to go, movie, restaurant, weekend, vacation, choose together.
-5. Ultimatum / negotiation (special case, no matrix): Keywords: take it or leave it, offer, salary, price, bill, negotiate, split money.
+5. Ultimatum / negotiation (special case, no matrix): Keywords: take it or leave it, offer, salary, price, bill, negotiat (stem: matches negotiate/negotiating/negotiation), split money.
 6. If no game scores at least 1 keyword hit, show a numbered menu of the 5 games and let the user pick (validated).
 
 ## Classification
