@@ -45,6 +45,9 @@ If no keyword is recognised, it shows a numbered menu of the five models and ask
 ## Input rules (validation)
 
 - The description must be English text: any letter that is not Latin (for example Cyrillic) is rejected.
+  The error message lists the offending characters with their Unicode code points (a typical cause is a Cyrillic
+  letter that looks like a Latin one, typed with the Russian keyboard layout). Pasted terminal control
+  characters and invisible characters are removed before checking.
 - At least 3 words and at most 1000 characters; empty or symbol-only input is rejected.
   In interactive mode you get 3 attempts, then the program exits with code 1.
 - Follow-up answers: `y/yes/n/no` for the yes/no question, a whole number from 1 to 5 for the relationship question.

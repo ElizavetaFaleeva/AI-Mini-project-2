@@ -13,6 +13,7 @@ Usage:
 """
 import argparse
 import copy
+import re
 import sys
 import textwrap
 import unicodedata
@@ -83,7 +84,7 @@ GAMES: Dict[str, dict] = {
         "matrix": [[(3, 2), (0, 0)], [(0, 0), (2, 3)]],
         "coop": None,
         "keywords": ["where to go", "movie", "restaurant", "weekend", "vacation",
-                     "choose together"],
+                     "choose together", "walk", "hang out", "go out", "invite", "dinner", "party"],
         "advice": [
             "You both want to do something together; the worst outcome is not "
             "agreeing at all.",
@@ -112,6 +113,14 @@ DISCLAIMER = ("Note: this is a simplified model, not a substitute for talking "
 # --------------------------------------------------------------------------
 # Pure logic (easy to test)
 # --------------------------------------------------------------------------
+def clean_input(text: str) -> str:
+    """Remove terminal paste markers, control and invisible characters from typed text."""
+    text = re.sub(r"\x1b\[[0-9;?]*[ -/]*[@-~]", "", text)  # ANSI escape sequences
+    text = re.sub(r"\[20[01]~", "", text)  # bracketed-paste markers whose ESC was dropped
+    text = text.replace("\t", " ")
+    return "".join(ch for ch in text if unicodedata.category(ch) not in ("Cc", "Cf"))
+
+
 def validate_description(text: str) -> Tuple[bool, str]:
     """Check a situation description; return (ok, message)."""
     if text is None or not text.strip():
@@ -122,8 +131,15 @@ def validate_description(text: str) -> Tuple[bool, str]:
         return False, "Please write at least 3 words so I can understand the situation."
     if not any(ch.isalpha() for ch in text):
         return False, "The description should contain words, not only symbols."
-    if any(ch.isalpha() and not unicodedata.name(ch, "").startswith("LATIN") for ch in text):
-        return False, "Please write the description in English using Latin letters only."
+    bad = []
+    for ch in text:
+        if ch.isalpha() and not unicodedata.name(ch, "").startswith("LATIN") and ch not in bad:
+            bad.append(ch)
+    if bad:
+        shown = ", ".join(f"'{ch}' (U+{ord(ch):04X} {unicodedata.name(ch, 'unknown')})" for ch in bad[:5])
+        return False, ("Please write the description in English using Latin letters only. "
+                       f"Not allowed: {shown}. Check your keyboard layout: some letters look "
+                       "Latin but belong to another alphabet.")
     return True, ""
 
 
@@ -236,6 +252,9 @@ def run_selftest() -> int:
     assert classify("blah blah")[0] is None
     assert classify("we are negotiating the price")[0] == "ultimatum"  # stem 'negotiat'
     assert classify("we argue about everything")[0] == "chicken"
+    assert classify("a friend asks me to go for a walk")[0] == "battle"
+    assert clean_input("\x1b[200~3\x1b[201~") == "3" and clean_input("a\u200bb") == "ab"
+    assert "U+0441" in validate_description("we have \u0441ontext here")[1]  # Cyrillic lookalike
     assert classify("where to go this weekend, a movie or a restaurant")[0] == "battle"
     assert validate_description("")[0] is False
     assert validate_description("   ")[0] is False
@@ -259,7 +278,7 @@ def run_selftest() -> int:
 def ask_yes_no(question: str, ask=input) -> bool:
     """Ask a y/n question (y/n/yes/no) until the answer is valid."""
     while True:
-        ans = ask(question + " (y/n): ").strip().lower()
+        ans = clean_input(ask(question + " (y/n): ")).strip().lower()
         if ans in ("y", "yes"):
             return True
         if ans in ("n", "no"):
@@ -270,7 +289,7 @@ def ask_yes_no(question: str, ask=input) -> bool:
 def ask_int(question: str, low: int, high: int, ask=input) -> int:
     """Ask for an integer between low and high (inclusive) until valid."""
     while True:
-        ans = ask(f"{question} [{low}-{high}]: ").strip()
+        ans = clean_input(ask(f"{question} [{low}-{high}]: ")).strip()
         if ans.lstrip("+-").isdigit() and low <= int(ans) <= high:
             return int(ans)
         print(f"Please enter a whole number from {low} to {high}.")
@@ -410,7 +429,7 @@ def build_parser() -> argparse.ArgumentParser:
 def read_description(attempts: int = 3) -> Optional[str]:
     """Ask for a valid description (max attempts); return None if all fail."""
     for _ in range(attempts):
-        text = input("Describe your situation: ")
+        text = clean_input(input("Describe your situation: "))
         ok, msg = validate_description(text)
         if ok:
             return text
@@ -425,6 +444,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         return run_selftest()
     try:
         if args.text is not None:
+            args.text = clean_input(args.text)
             ok, msg = validate_description(args.text)
             if not ok:
                 print(msg)
