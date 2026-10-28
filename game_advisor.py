@@ -43,11 +43,11 @@ GAMES: Dict[str, dict] = {
                   "score. I'll take the first turn.",
     },
     "chicken": {
-        "name": "Chicken (standoff)",
+        "name": "Chicken",
         "actions": ["Yield", "Stand firm"],
         "matrix": [[(3, 3), (2, 4)], [(4, 2), (0, 0)]],
         "coop": (0, 0),
-        "keywords": ["argu", "quarrel", "who backs down", "stubborn", "refuse to apologize",
+        "keywords": ["argument", "quarrel", "who backs down", "stubborn", "refuse to apologize",
                      "standoff", "conflict", "ссора", "ссорим", "спор", "не уступает",
                      "упрям", "конфликт"],
         "advice": [
@@ -62,7 +62,7 @@ GAMES: Dict[str, dict] = {
                   "this one - can we handle the next one differently?",
     },
     "stag": {
-        "name": "Stag Hunt (trust and coordination)",
+        "name": "Stag Hunt",
         "actions": ["Trust", "Play safe"],
         "matrix": [[(5, 5), (0, 3)], [(3, 0), (3, 3)]],
         "coop": (0, 0),
@@ -80,7 +80,7 @@ GAMES: Dict[str, dict] = {
         "phrase": "I'm in if you're in. Can we agree who does what and check in on Friday?",
     },
     "battle": {
-        "name": "Battle of the Sexes (coordination with different preferences)",
+        "name": "Battle of the Sexes",
         "actions": ["Option A", "Option B"],
         "matrix": [[(3, 2), (0, 0)], [(0, 0), (2, 3)]],
         "coop": None,
